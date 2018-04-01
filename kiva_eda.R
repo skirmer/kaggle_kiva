@@ -22,6 +22,8 @@ loans <- read.csv("kiva_loans.csv", stringsAsFactors = FALSE)
 #loan_themes <- read.csv("loan_theme_ids.csv", stringsAsFactors = FALSE)
 #loan_themes_region <- read.csv("loan_themes_by_region.csv", stringsAsFactors = FALSE)
 
+loans$any_female <- grepl("female", loans$borrower_genders)
+
 
 # Summarize
 sum_loans <- loans %>%
@@ -30,6 +32,9 @@ sum_loans <- loans %>%
     mean_term = mean(term_in_months, na.rm = T)
     , mean_lenders = mean(lender_count, na.rm = T)
     , mean_amt = mean(loan_amount, na.rm=T)
+    , mean_f_term = mean(term_in_months[any_female==1], na.rm = T)
+    , mean_f_lenders = mean(lender_count[any_female==1], na.rm = T)
+    , mean_f_amt = mean(loan_amount[any_female==1], na.rm = T)
   )
 
 

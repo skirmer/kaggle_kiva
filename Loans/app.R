@@ -29,14 +29,24 @@ server <- function(input, output) {
    
    output$mapPlot <- renderPlot({
      loans_map <- inputdata
+     color_map <- inputdata
      
      if(input$CONTINENT != "All"){
        loans_map <- dplyr::filter(loans_map, CONTINENT == input$CONTINENT)
+       color_map <- dplyr::filter(color_map, CONTINENT == input$CONTINENT) 
+     }
+     
+     if(input$ECONOMY != "All"){
+       color_map <- dplyr::filter(color_map, ECONOMY == input$ECONOMY|is.na(input$ECONOMY))
+     }
+     
+     if(input$INCOME_GRP != "All"){
+       color_map <- dplyr::filter(color_map, INCOME_GRP == input$INCOME_GRP|is.na(input$INCOME_GRP))
      }
      
      if(input$METRIC != "mean_term"){
       VARIABLE = input$METRIC
-     }
+     } else {VARIABLE = "mean_term"}
      
       # generate bins based on input$bins from ui.R
      
@@ -47,8 +57,8 @@ server <- function(input, output) {
               axis.text.x = element_blank(),
               axis.text.y = element_blank(),
               axis.title = element_blank())+
-        geom_polygon(data= loans_map, aes(x=long, y=lat, group=group, fill= get(eval(VARIABLE))))+
-        geom_path(aes(x=long, y=lat, group=group), color="black", size=0.2)+
+        geom_polygon(data=color_map, aes(x=long, y=lat, group=group, fill= get(eval(VARIABLE))))+
+        geom_path(data=loans_map, aes(x=long, y=lat, group=group), color="black", size=0.2)+
         coord_quickmap()+
         labs(title="")
       
@@ -60,7 +70,7 @@ server <- function(input, output) {
 ui <- fluidPage(
   
   # Application title
-  titlePanel("Loan Data by Country"),
+  titlePanel("Kiva Loan Data by Country"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
@@ -68,10 +78,19 @@ ui <- fluidPage(
       selectInput("CONTINENT",
                            "CONTINENT:",
                            c("All",  sort(trimws(unique(as.character(inputdata$CONTINENT))))))
+    
+      , selectInput("ECONOMY",
+                          "ECONOMY:",
+                          c("All",  sort(trimws(unique(as.character(inputdata$ECONOMY))))))
+      
+      , selectInput("INCOME_GRP",
+                          "INCOME_GRP:",
+                          c("All",  sort(trimws(unique(as.character(inputdata$INCOME_GRP))))))
       
      , selectInput("METRIC",
-                  "METRIC:",
-                  c("mean_term" ,   "mean_lenders", "mean_amt")
+                  "METRIC:"
+                  , selected = "mean_term"
+                  , c("mean_term", "mean_lenders", "mean_amt", "mean_f_term", "mean_f_lenders", "mean_f_amt")
     )),
     
     # Show a plot of the generated distribution
