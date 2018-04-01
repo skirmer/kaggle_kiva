@@ -1,0 +1,1 @@
+This project comes out of the kaggle datasets for Kiva, a crowdfunding site for microloans. I'm interested in the core question being asked, and thought that some mapping and use of shiny for its dynamic rendering properties could make for some good results. Still a work in progress!
