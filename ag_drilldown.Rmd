@@ -1,0 +1,102 @@
+---
+title: "Agricultural Drilldown on Kiva Loans Using Reticulate"
+output:
+  html_document:
+    toc: true
+---
+
+I've already gained some familiarity with this data from building a Shiny app
+for mapping it, but I want to take this opportunity to also brush up my Python
+and use reticulate to smoothly integrate with R.
+
+For this specific notebook, I'm going to take a closer look at agricultural loans
+and see what we can learn about them. I already did some initial data cleaning and
+manipulation in R for the map, so I'm going to reuse that element.
+
+```{r setup, echo=TRUE, message=FALSE, error=FALSE, warning=FALSE}
+library(reticulate)
+library(magrittr)
+library(dplyr)
+use_condaenv("py3")
+
+knitr::knit_engines$set(python = reticulate::eng_python)
+
+source("kiva_loan_cleaning.R")
+
+```
+
+After pulling in the data initially from my existing R script, now I'm calling it into python
+ and converting it to a pandas df for continuing along.
+```{python, echo=TRUE}
+import pandas as pd
+loanspd = pd.DataFrame(r.loans)
+
+print(loanspd.head(n=5))
+```
+Looks like what I'm expecting, great. 
+
+## By Country
+Now let's start digging up some insights. What proportion of all loans are agricultural, on a country by country basis?
+```{python, echo=TRUE}
+import numpy as np
+
+loanspd['Agriculture'] =  np.where(loanspd['sector']=="Agriculture", True, False)
+print(loanspd.head(n=5))
+
+```
+
+```{python, echo=TRUE}
+agloan = loanspd[loanspd['Agriculture'] == True]
+bycountry = agloan.groupby(['country', 'Agriculture']) 
+sumcountry = bycountry['usd_amt'].describe()
+print(sumcountry.head(n=5))
+
+```
+I discovered that I can't make R handle a pandas summary object directly, so this summary work I did in python
+has to be done in R. Not a big deal, I'm sure I'll figure out how to coerce a summary
+ object sometime later!
+ 
+### Table - Top 20 Countries
+ 
+```{r}
+
+ag_df <- py$agloan %>%
+  group_by(country, Agriculture) %>%
+  summarize(mean_loan = mean(usd_amt, na.rm = T)
+            , median_loan = median(usd_amt, na.rm = T)
+            , min_loan = min(usd_amt, na.rm = T)
+            , max_loan = max(usd_amt, na.rm=T)
+            , n())
+
+ag_df <- ag_df %>%
+  ungroup() %>%
+  top_n(20, wt=median_loan)
+
+knitr::kable(ag_df)
+
+```
+
+
+### Plot - Top 20 Countries
+```{r, fig.height=20}
+library(ggplot2)
+ag_df$country <- factor(ag_df$country, levels = ag_df$country[order(ag_df$median_loan)])
+
+ggplot(ag_df, aes(x=country, group = country, y= median_loan))+
+  theme(legend.position="none")+
+  geom_bar(aes(fill = country), position = "dodge", stat="identity")+
+  coord_flip()+
+  labs(title="Top 20 Countries by Median Agricultural Loan Amount (USD)")
+```
+
+
+
+## References
+
+Because I am using this as both a project and a learning exercise, I'm including 
+the best results from my inevitable google searches here.
+
+ * http://bconnelly.net/2013/10/summarizing-data-in-python-with-pandas/   
+ * https://rstudio.github.io/reticulate/articles/r_markdown.html#calling-r-from-python  
+ * https://chrisalbon.com/python/data_wrangling/pandas_selecting_rows_on_conditions/   
+
