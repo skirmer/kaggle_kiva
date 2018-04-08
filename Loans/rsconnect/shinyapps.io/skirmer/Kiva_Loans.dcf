@@ -1,0 +1,12 @@
+name: Kiva_Loans
+title: Kiva_Loans
+username:
+account: skirmer
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 313220
+bundleId: 1307944
+url: https://skirmer.shinyapps.io/Kiva_Loans/
+when: 1523145618.5771
+asMultiple: FALSE
+asStatic: FALSE
