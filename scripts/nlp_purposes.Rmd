@@ -1,0 +1,96 @@
+---
+title: "Loan Purpose NLP"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidytext)
+```
+
+```{r}
+head(loans)
+
+purposework <- loans[, c("id","country_code", "country", "activity", "sector", "use")]
+
+
+```
+
+
+## Most Common
+
+```{r}
+
+sector_sum <- purposework %>%
+  filter(nchar(use) > 0) %>% # Only looking at use specified
+  group_by(country, sector, activity) %>% # Within country cats - assuming country is right
+  summarize(records = n()) %>% # popularity assessment
+  ungroup() %>% 
+  top_n(20)
+
+sector_sum
+```
+
+
+## Least Common
+```{r}
+sector_sum2 <- purposework %>%
+  filter(nchar(use) > 0) %>% # Only looking at use specified
+  group_by(country, sector, activity) %>% # Within country cats - assuming country is right
+  summarize(records = n()) %>% # popularity assessment
+  ungroup() %>% 
+  top_n(-20)
+
+sector_sum2
+```
+
+Examine the descriptions of the uses?
+
+```{r}
+
+data(stop_words)
+
+
+uses_tokens <- purposework %>%
+  unnest_tokens(word, use) %>%
+  anti_join(stop_words) %>%
+  filter(!(grepl("([0-9]+)", word)))%>%
+  mutate(word_short_en = SnowballC::wordStem(word, language = "english")) %>%
+  mutate(word_short_sp = SnowballC::wordStem(word, language = "spanish")) %>%
+  mutate(word_short_fr = SnowballC::wordStem(word, language = "french"))
+
+
+head(uses_tokens, 20)
+
+
+```
+
+Common wording within sectors/activities?
+
+English to start
+```{r}
+
+uses_tokens2 <- uses_tokens %>%
+  group_by(country, sector, activity, word_short_en) %>%
+  summarize(records = n()) %>%
+   ungroup() #%>% 
+  # top_n(50)
+
+head(uses_tokens2,20)
+
+feather::write_feather(uses_tokens2, "~/kaggle_kiva/Loans/word_data.feather")
+
+```
+
+
+# Agriculture
+```{r}
+
+ggplot(uses_tokens2[uses_tokens2$sector=="Agriculture" & uses_tokens2$records > 5000,]) + 
+  #facet_grid(.~word_short_en)+
+  theme(legend.position = "bottom")+
+  theme_bw()+
+  coord_flip()+
+  geom_bar(aes(x=word_short_en, weight=records, fill = activity))
+```
+

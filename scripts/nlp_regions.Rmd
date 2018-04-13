@@ -1,5 +1,5 @@
 ---
-title: "Regional Naming NLP"
+title: "Loan Purpose NLP"
 output: html_document
 ---
 
@@ -11,9 +11,8 @@ library(tidytext)
 ```{r}
 head(loans)
 
-regionwork <- loans[, c("id","country_code", "country", "region")]
+purposework <- loans[, c("id","country_code", "country", "activity", "sector", "use")]
 
-#feather::write_feather(regionwork, "~/kaggle_kiva/data/regiondata.feather")
 
 ```
 
