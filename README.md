@@ -5,7 +5,9 @@ This project comes out of the kaggle datasets for Kiva, a crowdfunding site for 
 ### Current Elements:
 
 * GIS Shiny App: https://skirmer.shinyapps.io/Kiva_Loans/   
-* Agriculture Drilldown (using python and reticulate): https://github.com/skirmer/kaggle_kiva/blob/master/ag_drilldown.Rmd  
+* Agriculture Drilldown (using python and reticulate): https://github.com/skirmer/kaggle_kiva/blob/master/ag_drilldown.Rmd   
+* Regional data NLP: Infeasible. Turns out, the majority of records in the loan data give entirely non-standard region descriptions. For example, a loan record indicates "Bais, Negros Oriental" in the Philippines, which is a perfectly accurate city and province, but the region description data only names the more general regional name "Central Visayas". These two records should be matched, geographically, but no data is available to do this algorthmically, and this same situation is present for many records.   
+
 
 ### Sources:
 

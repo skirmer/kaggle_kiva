@@ -1,0 +1,176 @@
+---
+title: "Regional Naming NLP"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidytext)
+```
+
+```{r}
+head(loans)
+
+regionwork <- loans[, c("id","country_code", "country", "region")]
+
+#feather::write_feather(regionwork, "~/kaggle_kiva/data/regiondata.feather")
+
+```
+
+
+## Most Common
+
+```{r}
+
+region_sum <- regionwork %>%
+  filter(nchar(region) > 0) %>% # Only looking at region specified
+  group_by(country, region) %>% # Within country cats - assuming country is right
+  summarize(records = n()) %>% # popularity assessment
+  ungroup() %>% 
+  top_n(20)
+
+region_sum
+```
+
+
+## Least Common
+```{r}
+region_sum2 <- regionwork %>%
+  filter(nchar(region) > 0) %>% # Only looking at region specified
+  group_by(country, region) %>% # Within country cats - assuming country is right
+  summarize(records = n()) %>% # popularity assessment
+  ungroup() %>% 
+  top_n(-20)
+
+region_sum2
+```
+
+Remove words like region, community, and village.
+
+```{r}
+
+region_sum3 <- regionwork %>%
+  filter(nchar(region) > 0) %>% # Only looking at region specified
+  tidyr::separate(region, c("word1", "word2"), sep = " ", extra = "merge", fill = "right") 
+
+
+region_sum3$word1 <- gsub("village|community|region|district|([0-9]+)", "", region_sum3$word1)
+region_sum3$word2 <- gsub("village|community|region|district|([0-9]+)", "", region_sum3$word2)
+region_sum3$word1 <- ifelse(is.na(region_sum3$word1), "", region_sum3$word1)
+region_sum3$word2 <- ifelse(is.na(region_sum3$word2), "", region_sum3$word2)
+
+region_sum3 <- tidyr::unite(region_sum3, 'cleanregion', c('word1','word2'), sep = " ")
+
+head(region_sum3, 20)
+
+  
+
+```
+
+```{r}
+region_sum4 <- region_sum3 %>%
+  group_by(country, cleanregion) %>% # Within country cats - assuming country is right
+  summarize(records = n()) %>% # popularity assessment
+  ungroup() %>% 
+  top_n(50)
+
+region_sum4
+```
+
+
+Pull in the region data that's been provided
+
+```{r}
+
+regiontest <- read.csv("~/kaggle_kiva/data/kiva_mpi_region_locations.csv")
+# 
+# regiontest$region_low <- tolower(regiontest$region) 
+# 
+# 
+# regiontest <- regiontest %>%
+#   tidytext::unnest_tokens(word, region_low, drop=FALSE) 
+
+head(regiontest[regiontest$country == "Philippines",], 50)
+#Bais, Negros Oriental
+```
+
+Let's see how our tidy words work with the provided names
+
+
+```{r}
+
+region_merge <- merge(regiontest, region_sum3, by.x=c("region", "country"), by.y=c("cleanregion", "country"))
+nrow(region_merge)
+
+head(region_merge)
+
+```
+
+
+How many records didn't have a matching region?
+
+```{r}
+
+unmatched_records <- dplyr::setdiff(region_sum3$id, region_merge$id)
+
+orphans <- dplyr::filter(region_sum3, id %in% unmatched_records)
+
+head(orphans, 20)
+
+table(orphans$country)
+```
+
+
+Analyze the orphans
+
+```{r}
+
+
+table(region_sum3$word == "lahore")
+table(regiontest$word == "lahore")
+
+orphan_sum <- orphans %>%
+  group_by(country, word) %>%
+  summarize(records = n()) %>%
+  ungroup() %>%
+  filter(records > 10)
+
+head(orphan_sum, 25)
+
+```
+
+```{r}
+
+table(orphan_sum$country)
+
+
+```
+
+
+Dig in on one country
+```{r}
+
+zimbabwe <- orphan_sum[orphan_sum$country == "Zimbabwe",]
+
+zimbabwe
+
+
+z2 <- regiontest[regiontest$country == "Zimbabwe",]
+
+z2
+
+```
+
+
+Return to the merged set
+
+```{r}
+
+region_merge <- unique(region_merge[, c("LocationName", "ISO","country.x","region.x","world_region","MPI", "geo", "lat","lon","region_low", "id","country_code", "country.y", "region.y")])
+
+feather::write_feather(region_merge, "~/kaggle_kiva/data/region_merge.feather")
+
+names(region_merge)
+
+```
+
