@@ -93,7 +93,7 @@ server <- function(input, output) {
   })
   
   
-  output$barPlot <- renderPlot({
+  output$barPlot <- renderPlot(width = 1000, height = 600,{
     
     word_data <- word_data
     
@@ -148,7 +148,7 @@ server <- function(input, output) {
     barplot1
   })
   
-   output$mapPlot <- renderPlot(width = 900, height = 700, {
+   output$mapPlot <- renderPlot(width = 1000, height = 700, {
      loans_map <- inputdata
      
      country_names <- country_names
@@ -347,6 +347,22 @@ ui <- fluidPage(
                                       c("All",  sort(trimws(unique(as.character(word_data$activity)))))))
                , 
                plotOutput("barPlot")
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
+               , br()
                , br()
                , br()
                , br()

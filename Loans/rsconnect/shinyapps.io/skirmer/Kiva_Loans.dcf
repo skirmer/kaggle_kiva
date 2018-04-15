@@ -5,8 +5,8 @@ account: skirmer
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 313220
-bundleId: 1317926
+bundleId: 1318609
 url: https://skirmer.shinyapps.io/Kiva_Loans/
-when: 1523656174.51927
+when: 1523726048.50407
 asMultiple: FALSE
 asStatic: FALSE
