@@ -15,7 +15,7 @@ library(quantmod)
 
 # Loan Data Cleaning and Conversion
 
-loans <- read.csv("~/kaggle_kiva/data/kiva_loans.csv", stringsAsFactors = FALSE)
+loans <- read.csv("data/kiva_loans.csv", stringsAsFactors = FALSE)
 
 #regions <- read.csv("kiva_mpi_region_locations.csv", stringsAsFactors = FALSE)
 #loan_themes <- read.csv("loan_theme_ids.csv", stringsAsFactors = FALSE)

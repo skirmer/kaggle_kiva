@@ -13,7 +13,7 @@ library(classInt)
 library(broom)
 
 #1. Load shapefile (countries)
-shapefile1 <- readOGR(dsn="~/kaggle_kiva/data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp", layer="ne_110m_admin_0_countries", verbose=F)
+shapefile1 <- readOGR(dsn="data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp", layer="ne_110m_admin_0_countries", verbose=F)
 
 proj4string(shapefile1)
 
